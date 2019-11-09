@@ -1,12 +1,96 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>client</title>
+    <title>Assignment 2</title>
   </head>
   <body>
+    <h1>Movie Database App</h1>
     <div id="app"></div>
-    <!-- built files will be auto injected -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript">
+
+
+    const app = new Vue({
+      el:"#app",
+      data: {
+
+      },
+      methods: {
+        deleteDB: function() {
+           var myHeaders = new Headers();
+           myHeaders.append(
+             "Access-Control-Allow-Origin",
+             "http://localhost:8081"
+           );
+           var myInit = {
+             method: "GET",
+             headers: myHeaders,
+             cache: "default",
+             mode: "cors"
+           };
+           const deleteUrl = "http://localhost:8081/deleteDB";
+           var deleteRequest = new Request(deleteUrl, myInit);
+           fetch(deleteRequest)
+              .then(response => {
+                return response.json();
+              });
+
+         },
+         queryDB: function() {
+            var myHeaders = new Headers();
+            myHeaders.append(
+              "Access-Control-Allow-Origin",
+              "http://localhost:8081"
+            );
+            var myInit = {
+              method: "GET",
+              headers: myHeaders,
+              cache: "default",
+              mode: "cors"
+            };
+            const queryUrl = "http://localhost:8081/queryDB";
+            var queryRequest = new Request(queryUrl, myInit);
+            fetch(queryRequest)
+               .then(response => {
+                 return response.json();
+               });
+
+          },
+       createDB: function() {
+         var myHeaders = new Headers();
+         myHeaders.append(
+           "Access-Control-Allow-Origin",
+           "http://localhost:8081"
+         );
+         var myInit = {
+           method: "GET",
+           headers: myHeaders,
+           cache: "default",
+           mode: "cors"
+         };
+         const createUrl = "http://localhost:8081/createDB";
+         var createRequest = new Request(createUrl, myInit);
+         fetch(createRequest)
+            .then(response => {
+              return response.json();
+            });
+       }
+     },
+      template:`
+      <div>
+      <button v-on:click="createDB">Create Database</button>
+      <button v-on:click="queryDB">Query Database</button>
+      <button v-on:click="deleteDB">Destroy Database</button>
+      </div>`
+    })
+
+
+
+
+
+    </script>
   </body>
 </html>
