@@ -70,10 +70,11 @@ app.get('/QueryDB/:year/:title', (req, res) => {
 
   var params = {
       TableName : "Movies",
-      ProjectionExpression:"#yr, title, plot, director, image_url",
+      ProjectionExpression:"#yr, title, plot, director, #r, release_date",
       KeyConditionExpression: "#yr = :yyyy and begins_with (title, :substr)",
       ExpressionAttributeNames:{
-          "#yr": "year"
+          "#yr": "year",
+          "#r": "rank"
       },
       ExpressionAttributeValues: {
           ":yyyy": year,
@@ -89,10 +90,15 @@ app.get('/QueryDB/:year/:title', (req, res) => {
           data.Items.forEach(function(item) {
               console.log(item.title);
               searchResults.movies.push(item);
+              console.log(searchResults)
           });
       }
   });
-   res.send(searchResults);
+  console.log(searchResults)
+
+  setTimeout(function(){
+   res.send(searchResults)
+ }, 2000);
 });
 
 
@@ -132,8 +138,9 @@ app.get('/createDB', (req, res) => {
             "year":  movie.year,
             "title": movie.title,
             "plot":  movie.info.plot,
-            "director": movie.info.director,
-            "image_url":movie.info.image_url
+            "director": movie.info.directors[0],
+            "rank": movie.info.rank,
+            "release_date": movie.info.release_date
         }
     };
     setTimeout(function(){

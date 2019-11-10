@@ -17,7 +17,8 @@
       el:"#app",
       data: {
         year: undefined,
-        title: undefined
+        title: undefined,
+        results: undefined
       },
       methods: {
         deleteDB: function() {
@@ -58,7 +59,11 @@
             fetch(queryRequest)
                .then(response => {
                  return response.json();
-               });
+               })
+               .then(data =>{
+                 this.results = data;
+                 console.log(data)
+               } );
 
           },
        createDB: function() {
@@ -88,6 +93,27 @@
       <input v-model="title" placeholder="Title">
       <button v-on:click="queryDB(year, title)">Query Database</button>
       <button v-on:click="deleteDB">Destroy Database</button>
+      <div v-if="results">
+        <table style="width:100%">
+          <tr>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Plot</th>
+            <th>Director</th>
+            <th>Rank</th>
+            <th>Release Date</th>
+          </tr>
+          <tr v-for= "movie in results.movies">
+          <th>{{ movie.title }}</th>
+          <th>{{ movie.year }}</th>
+          <th>{{ movie.plot }}</th>
+          <th>{{ movie.director }}</th>
+          <th>{{ movie.rank }}</th>
+          <th>{{ movie.release_date.slice(0,9) }}</th>
+          </tr>
+
+        </table>
+      </div>
       </div>`
     })
 
