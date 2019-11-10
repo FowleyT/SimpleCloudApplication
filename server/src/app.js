@@ -14,6 +14,8 @@ app.use(bodyParser.json())
 app.use(cors())
 app.listen(process.env.PORT || 8081)
 
+var allMovies;
+var dynamodb;
 aws.config.update({
   accessKeyId: publicKey,
   secretAccessKey: privateKey,
@@ -37,7 +39,7 @@ s3.getObject(bucketParams, function(err, data) {
 
 //deletes the table
 app.get('/deleteDB', (req, res) => {
-  var dynamodb = new aws.DynamoDB();
+  dynamodb = new aws.DynamoDB();
   var paramsForDelete = {
     TableName : "Movies"
   };
@@ -55,32 +57,42 @@ app.get('/deleteDB', (req, res) => {
 
 
 //queries the table based on the year and name user input
-app.get('/QueryDB', (req, res) => {
+app.get('/QueryDB/:year/:title', (req, res) => {
   var docClient = new aws.DynamoDB.DocumentClient();
-  var table = "Movies";
+  //var table = "Movies";
+  var year = parseInt(req.params.year);
+  var title = req.params.title;
 
-//do a for loop of each movie and
-//if movie.title begins with the input title and movie.year == input year
-// then add it to (an array?) a JSON object
+  var searchResults = {"movies":[]};
 
-  var year = 1973;
-  var title = "Enter the Dragon";
+
+  console.log("Querying for movies from " + year + " with title begginning with " + title );
 
   var params = {
-    TableName: table,
-    Key:{
-        "year": year,
-        "title": title
-    }
-  };
-  docClient.get(params, function(err, data) {
-    if (err) {
-        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-      } else {
-        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-        res.send(data)
+      TableName : "Movies",
+      ProjectionExpression:"#yr, title, plot, director, image_url",
+      KeyConditionExpression: "#yr = :yyyy and begins_with (title, :substr)",
+      ExpressionAttributeNames:{
+          "#yr": "year"
+      },
+      ExpressionAttributeValues: {
+          ":yyyy": year,
+          ":substr": title
       }
-    });
+  };
+
+  docClient.query(params, function(err, data) {
+      if (err) {
+          console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+      } else {
+          console.log("Query succeeded.");
+          data.Items.forEach(function(item) {
+              console.log(item.title);
+              searchResults.movies.push(item);
+          });
+      }
+  });
+   res.send(searchResults);
 });
 
 
@@ -88,7 +100,7 @@ app.get('/QueryDB', (req, res) => {
 
 //creates the table and stores info from the s3 object in it
 app.get('/createDB', (req, res) => {
-  var dynamodb = new aws.DynamoDB();
+  dynamodb = new aws.DynamoDB();
   var params = {
       TableName : "Movies",
       KeySchema: [
@@ -112,7 +124,7 @@ app.get('/createDB', (req, res) => {
       }
   });
   var docClient = new aws.DynamoDB.DocumentClient();
-  var allMovies = s3obj;   //JSON.parse(s3obj);
+  allMovies = s3obj;   //JSON.parse(s3obj);
   allMovies.forEach(function(movie) {
     var params = {
         TableName: "Movies",
@@ -135,9 +147,6 @@ app.get('/createDB', (req, res) => {
     }, 2000);
 
 });
-
-
-
 
 res.send(JSON.parse('{"status":"done"}'));
 
